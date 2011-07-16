@@ -61,8 +61,15 @@ class Type
 
   def description
     return @description if @description
-    @description = @doc.css("div#mainContent h1.page-title").first.next
-    @description = @description.inner_text
+    element = @doc.css("div#mainContent h1.page-title").first.next
+
+    # Work out where the description stops
+    while !(['div', 'table', 'h3'].include?(element.name.downcase))
+      (@description ||= '') << element.inner_text
+      element = element.next
+    end
+
+    @description
   end
 
   def ancestors
