@@ -1,0 +1,153 @@
+#!/usr/bin/env ruby
+## schema.org_scraper: Scrapes the schema.org site
+##
+## Usage: schema.org_scraper [options...]
+##
+## Returns the vocabularies and datatypes from the schema.org site
+## in either JSON or YAML
+##
+
+require 'json'
+require 'nokogiri'
+require 'open-uri'
+require 'optparse'
+require 'yaml'
+
+# The page with the full list of all the types
+TYPES_LIST_URL = 'http://schema.org/docs/full.html'
+
+# Displays comment at top of file
+def banner
+  File.readlines(__FILE__).
+  grep(/^##.*/).
+  map { |line| line.chomp[3..-1] }.
+  join("\n")+"\n"+"  Options:\n"
+end
+
+options = {output_format: :json, types: :vocabularies}
+ARGV.options do |option|
+  option.banner = banner
+  option.on('-j','--json', 'Output the schemas in JSON (Default)') do
+    options[:output_format] = :json
+  end
+  option.on('-y','--yaml', 'Output the schemas in YAML') do
+    options[:output_format] = :yaml
+  end
+  option.on('-v','--vocabularies', 'Output the Vocabularies (Default)') do
+    options[:types] = :vocabulaires
+  end
+  option.on('-d','--datatypes', 'Output the DataTypes') do
+    options[:types] = :datatypes
+  end
+  option.on_tail('-h','--help', 'This help message') {puts option; exit}
+
+  begin
+    option.parse!
+  rescue OptionParser::InvalidOption => error
+    puts "#{error.to_s.capitalize}\n#{option}"; exit
+  end
+
+end
+
+class Type
+
+  def initialize(html)
+    @doc	= Nokogiri::HTML(html)
+  end
+
+  def name
+    ancestors.last
+  end
+
+  def description
+    return @description if @description
+    @description = @doc.css("div#mainContent h1.page-title").first.next
+    @description = @description.inner_text
+  end
+
+  def ancestors
+    return @ancestors if @ancestors
+    @ancestors = @doc.css("div#mainContent h1.page-title a").collect do |a|
+      a.inner_text  
+    end
+  end
+
+  def vocabularies
+    return @vocabularies if @vocabularies
+    @vocabularies = @doc.css("thead.supertype th.supertype-name a").collect do |a|
+      a.inner_text  
+    end
+  end
+
+  def properties
+    return @properties if @properties
+    prop_thead = @doc.css("tbody.supertype").last
+    if prop_thead
+      @properties = prop_thead.css("tr").collect do |prop|
+        name = prop.css("th.prop-nam").inner_text
+        types = prop.css("td.prop-ect").inner_text
+        desc = prop.css("td.prop-desc").inner_text
+        {name: name, types: types, desc: desc}
+      end
+    end
+    @properties ||= []
+  end
+
+  def datatype?
+    ancestors.include?('DataType')
+  end
+
+  def vocabulary?
+    !datatype?
+  end
+
+  def to_h
+    hash = {
+      name: name,
+      description: description,
+      ancestors: ancestors,
+    }
+
+    hash[:vocabularies] = vocabularies if vocabularies.any?
+    hash[:properties] = properties if properties.any?
+    hash
+  end
+
+end
+
+# Raises URI::Error if can't create url
+def make_absolute_url(page_url, url)
+  return url unless URI.parse(url).relative?
+  URI.parse(page_url).merge(url).to_s
+end
+
+def get_type_links(html)
+  doc	= Nokogiri::HTML(html)
+  doc.css("div#mainContent a[name]").collect do |a|
+    href = a.next.attribute('href').value
+    make_absolute_url(TYPES_LIST_URL, href)
+  end
+end
+
+def get_types(links)
+  links.collect do |link|
+    html = open(link)
+    Type.new(html)
+  end
+end
+
+type_links = get_type_links(open(TYPES_LIST_URL))
+types = get_types(type_links)
+
+types = if options[:types] == :datatypes
+  types.find_all {|type| type.datatype?}
+else
+  types.find_all {|type| type.vocabulary?}
+end
+
+output = types.collect {|type| type.to_h}
+if options[:output_format] == :json
+  puts output.to_json
+else
+  puts output.to_yaml
+end

@@ -1,0 +1,32 @@
+= schema.org_scraper
+
+* {schema.org_scraper Github Repository}[https://github.com/LawrenceWoodman/schema.org_scraper]
+* {schema.org_scraper Bug Tracker}[https://github.com/LawrenceWoodman/schema.org_scraper/issues]
+
+== Description
+A scraper for the {schema.org}[schema.org] site that extracts the datatypes
+and vocabularies to a machine readable formats.
+
+=== Requirements:
+
+* +Nokogiri+
+
+== Usage
+
+To extract the datatypes from schema.org in JSON format:
+  bin/schema.org_scraper -d
+
+To extract vocabularies from schema.org in YAML format:
+  bin/schema.org_scraper -y
+
+For more information look at the help:
+  bin/schema.org_scraper -h
+
+== Bugs/Feature Requests
+If you find a bug or want to make a feature request, please report it at the
+schema.org_scraper project's {issues tracker}[https://github.com/LawrenceWoodman/schema.org_scraper/issues]
+on github.
+
+== License
+Copyright (c) 2011 Lawrence Woodman.
+This software is licensed under the MIT License.  Please see the file, LICENSE.rdoc, for details.
