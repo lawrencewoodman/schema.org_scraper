@@ -68,7 +68,6 @@ class Type
       (@description ||= '') << element.inner_text
       element = element.next
     end
-
     @description
   end
 
@@ -100,6 +99,18 @@ class Type
     @properties ||= []
   end
 
+  def instances
+    return @instances if @instances
+    ul_header = @doc.css("div#main h3").last
+    if ul_header
+      if ul_header.inner_text =~ /Instances of/i
+        ul = @doc.css("div#main ul").last
+        @instances = ul.css("li a").collect {|a| a.inner_text }
+      end
+    end
+    @instances ||= []
+  end
+
   def datatype?
     ancestors.include?('DataType')
   end
@@ -117,6 +128,7 @@ class Type
 
     hash['vocabularies'] = vocabularies if vocabularies.any?
     hash['properties'] = properties if properties.any?
+    hash['instances'] = instances if instances.any?
     hash
   end
 
