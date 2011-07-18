@@ -82,8 +82,10 @@ class Type
 
   def vocabularies
     return @vocabularies if @vocabularies
-    @vocabularies = @doc.css("thead.supertype th.supertype-name a").collect do |a|
-      a.inner_text  
+    css = "thead.supertype th.supertype-name a"
+    @vocabularies = @doc.css(css).each_with_object([]) do |a,memo|
+      vocabulary = a.inner_text
+      memo << vocabulary if vocabulary != name
     end
   end
 
@@ -125,9 +127,11 @@ class Type
     hash = {
       'name' => name,
       'description' => description,
-      'ancestors' => ancestors,
     }
 
+    if ancestors.length > 1
+      hash['ancestors'] = ancestors.first(ancestors.length-1)
+    end
     hash['vocabularies'] = vocabularies if vocabularies.any?
     hash['properties'] = properties if properties.any?
     hash['instances'] = instances if instances.any?
