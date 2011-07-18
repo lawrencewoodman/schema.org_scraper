@@ -1,2 +1,11 @@
+== 0.2.0 (18th July 2011)
+* The description extraction will now include the inner text of any anchors
+  included.
+* Uses strings instead of symbols for keys.
+* Extracts the instances of a type.
+* Converts some of the unicode to ascii
+* The output is sorted in order of type name.
+* Vocabularies and Ancestors now won't include self.
+
 == 0.1.0 (16th July 2011)
 * Initial Release
