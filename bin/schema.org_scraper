@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# Encoding: utf-8
 ## schema.org_scraper: Scrapes the schema.org site
 ##
 ## Usage: schema.org_scraper [options...]
@@ -68,7 +69,7 @@ class Type
       (@description ||= '') << element.inner_text
       element = element.next
     end
-    @description
+    @description = unicode2ascii(@description)
   end
 
   def ancestors
@@ -92,7 +93,7 @@ class Type
       @properties = prop_thead.css("tr").collect do |prop|
         name = prop.css("th.prop-nam").inner_text
         types = prop.css("td.prop-ect").inner_text
-        description = prop.css("td.prop-desc").inner_text
+        description = unicode2ascii(prop.css("td.prop-desc").inner_text)
         {'name' => name, 'types' => types, 'description' => description}
       end
     end
@@ -130,6 +131,11 @@ class Type
     hash['properties'] = properties if properties.any?
     hash['instances'] = instances if instances.any?
     hash
+  end
+
+  private
+  def unicode2ascii(text)
+    text.gsub(/\xE2\x80\x94/, ' - ')
   end
 
 end
