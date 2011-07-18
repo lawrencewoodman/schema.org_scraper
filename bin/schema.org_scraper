@@ -51,6 +51,7 @@ ARGV.options do |option|
 end
 
 class Type
+  include Comparable
 
   def initialize(html)
     @doc	= Nokogiri::HTML(html)
@@ -133,6 +134,10 @@ class Type
     hash
   end
 
+  def <=>(other)
+    name <=> other.name
+  end
+
   private
   def unicode2ascii(text)
     text.gsub(/\xE2\x80\x94/, ' - ')
@@ -162,7 +167,7 @@ def get_types(links)
 end
 
 type_links = get_type_links(open(TYPES_LIST_URL))
-types = get_types(type_links)
+types = get_types(type_links).sort
 
 types = if options[:types] == :datatypes
   types.find_all {|type| type.datatype?}
