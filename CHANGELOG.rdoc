@@ -1,3 +1,6 @@
+== 0.2.1 (19th July 2011)
+* Makes the JSON output prettier.
+
 == 0.2.0 (18th July 2011)
 * The description extraction will now include the inner text of any anchors
   included.
