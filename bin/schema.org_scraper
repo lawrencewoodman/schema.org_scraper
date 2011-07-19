@@ -91,13 +91,14 @@ class Type
 
   def properties
     return @properties if @properties
-    prop_thead = @doc.css("tbody.supertype").last
+    prop_thead = @doc.css("thead.supertype").last
     if prop_thead
-      @properties = prop_thead.css("tr").collect do |prop|
-        name = prop.css("th.prop-nam").inner_text
-        types = prop.css("td.prop-ect").inner_text
-        description = unicode2ascii(prop.css("td.prop-desc").inner_text)
-        {'name' => name, 'types' => types, 'description' => description}
+      # Only take properties from self
+      if prop_thead.css("th.supertype-name a").last.inner_text == name
+        prop_tbody = @doc.css("tbody.supertype").last
+        @properties = prop_tbody.css("tr").collect do |property|
+          get_property_details(property)
+        end
       end
     end
     @properties ||= []
@@ -145,6 +146,13 @@ class Type
   private
   def unicode2ascii(text)
     text.gsub(/\xE2\x80\x94/, ' - ')
+  end
+
+  def get_property_details(property)
+    name = property.css("th.prop-nam").inner_text
+    types = property.css("td.prop-ect").inner_text
+    description = unicode2ascii(property.css("td.prop-desc").inner_text)
+    {'name' => name, 'types' => types, 'description' => description}
   end
 
 end
