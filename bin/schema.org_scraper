@@ -181,7 +181,7 @@ end
 
 output = types.collect {|type| type.to_h}
 if options[:output_format] == :json
-  puts output.to_json
+  puts JSON.pretty_generate output
 else
   puts output.to_yaml
 end
