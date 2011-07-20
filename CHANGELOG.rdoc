@@ -1,3 +1,6 @@
+== 0.2.3 (20th July 2011)
+* Splits the property types into an array.
+
 == 0.2.2 (19th July 2011)
 * Ensure that only a vocabularies' own properties are listed.
 
