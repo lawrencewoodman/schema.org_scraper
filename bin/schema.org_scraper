@@ -150,7 +150,7 @@ class Type
 
   def get_property_details(property)
     name = property.css("th.prop-nam").inner_text
-    types = property.css("td.prop-ect").inner_text
+    types = property.css("td.prop-ect").inner_text.split(' or ')
     description = unicode2ascii(property.css("td.prop-desc").inner_text)
     {'name' => name, 'types' => types, 'description' => description}
   end
