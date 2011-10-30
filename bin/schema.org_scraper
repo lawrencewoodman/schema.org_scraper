@@ -70,6 +70,7 @@ class Type
       (@description ||= '') << element.inner_text
       element = element.next
     end
+    @description = @description.gsub(/\s+/, ' ').strip
     @description = unicode2ascii(@description)
   end
 
@@ -149,8 +150,9 @@ class Type
   end
 
   def get_property_details(property)
-    name = property.css("th.prop-nam").inner_text
-    types = property.css("td.prop-ect").inner_text.split(' or ')
+    name = property.css("th.prop-nam code").inner_text
+    types = property.css("td.prop-ect").inner_text
+    types = types.gsub(/\s+/, ' ').split(' or ').collect {|type| type.strip}
     description = unicode2ascii(property.css("td.prop-desc").inner_text)
     {'name' => name, 'types' => types, 'description' => description}
   end
@@ -165,8 +167,8 @@ end
 
 def get_type_links(html)
   doc	= Nokogiri::HTML(html)
-  doc.css("div#mainContent a[name]").collect do |a|
-    href = a.next.attribute('href').value
+  doc.css("div#mainContent td.tc a").collect do |a|
+    href = a.attribute('href').value
     make_absolute_url(TYPES_LIST_URL, href)
   end
 end
@@ -178,7 +180,9 @@ def get_types(links)
   end
 end
 
-type_links = get_type_links(open(TYPES_LIST_URL))
+# FIX: This is removing the link between multiple entries.
+# E.g. AccountingService is under FinancialService and ProfessionalService
+type_links = get_type_links(open(TYPES_LIST_URL)).sort.uniq
 types = get_types(type_links).sort
 
 types = if options[:types] == :datatypes
