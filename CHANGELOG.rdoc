@@ -1,3 +1,6 @@
+== 0.3.0 (31 October 2011)
+* Support new schema.org site layout.
+
 == 0.2.3 (20th July 2011)
 * Splits the property types into an array.
 
